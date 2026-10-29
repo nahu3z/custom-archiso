@@ -32,6 +32,13 @@ jobs:
           pacman --noconfirm -Sy archlinux-keyring
           pacman --noconfirm -Syu archiso git
 
+      - name: Prepare Profile Configuration
+        run: |
+          # Ensure pacman.conf exists in the profile by copying it from the system if not present
+          if [ ! -f ./profile/pacman.conf ]; then
+            cp /etc/pacman.conf ./profile/pacman.conf
+          fi
+
       - name: Build ISO
         run: |
           mkarchiso -v -w /tmp/archlive-work -o /tmp/archlive-out ./profile
