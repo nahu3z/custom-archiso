@@ -11,7 +11,6 @@ install_dir="arch"
 airootfs_image_type="squashfs"
 airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '15')
 
-declare -A file_permissions=(
-  ["/etc/shadow"]="0:0:400"
-  ["/root"]="0:0:750"
-)
+declare -A file_permissions
+file_permissions["/etc/shadow"]="0:0:400"
+file_permissions["/root"]="0:0:750"

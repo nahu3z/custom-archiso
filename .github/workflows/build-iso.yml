@@ -43,11 +43,12 @@ jobs:
               cp -a /usr/share/archiso/configs/releng/. "$BUILD_DIR"/
 
               if [ -f /src/profile/profiledef.sh ]; then
-                cp /src/profile/profiledef.sh "$BUILD_DIR/profiledef.sh"
+                printf '\n' >> "$BUILD_DIR/profiledef.sh"
+                cat /src/profile/profiledef.sh >> "$BUILD_DIR/profiledef.sh"
               fi
 
               if [ -f /src/profile/packages.x86_64 ]; then
-                cp /src/profile/packages.x86_64 "$BUILD_DIR/packages.x86_64"
+                cat /src/profile/packages.x86_64 >> "$BUILD_DIR/packages.x86_64"
               fi
 
               if [ -f /src/profile/pacman.conf ]; then
