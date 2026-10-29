@@ -32,19 +32,32 @@ jobs:
         shell: bash
         run: |
           set -euxo pipefail
-          if [ ! -f ./profile/pacman.conf ]; then
-            cp /etc/pacman.conf ./profile/pacman.conf
+          if [ ! -f "$GITHUB_WORKSPACE/profile/pacman.conf" ]; then
+            cp /etc/pacman.conf "$GITHUB_WORKSPACE/profile/pacman.conf"
           fi
 
       - name: Build ISO
         shell: bash
-        working-directory: ${{ github.workspace }}
         run: |
           set -euxo pipefail
-          pwd
-          ls -la
-          ls -la ./profile
-          mkarchiso -v -w /tmp/archlive-work -o /tmp/archlive-out ./profile
+
+          export PROFILE_PATH="$GITHUB_WORKSPACE/profile"
+          export WORK_DIR="/tmp/archlive-work"
+          export OUT_DIR="/tmp/archlive-out"
+
+          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
+          echo "PROFILE_PATH=$PROFILE_PATH"
+
+          ls -la "$GITHUB_WORKSPACE"
+          ls -la "$PROFILE_PATH"
+
+          test -d "$PROFILE_PATH"
+          test -f "$PROFILE_PATH/profiledef.sh"
+
+          rm -rf "$WORK_DIR" "$OUT_DIR"
+          mkdir -p "$WORK_DIR" "$OUT_DIR"
+
+          mkarchiso -v -w "$WORK_DIR" -o "$OUT_DIR" "$PROFILE_PATH"
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v7
