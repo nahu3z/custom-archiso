@@ -22,3 +22,6 @@ inetutils
 curl
 wget
 archinstall
+dkms
+linux-headers
+rtl8192eu-dkms

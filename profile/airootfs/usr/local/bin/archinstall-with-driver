@@ -1,0 +1,2 @@
+#!/usr/bin/env bash
+exec archinstall --config /etc/archinstall/rtl8192eu.json "$@"

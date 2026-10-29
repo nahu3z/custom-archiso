@@ -17,16 +17,31 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v7
 
-      - name: Build ISO with official releng profile
+      - name: Cache Pacman Packages
+        uses: actions/cache@v4
+        with:
+          path: /tmp/pacman-cache
+          key: pacman-cache-${{ runner.os }}-${{ hashFiles('profile/packages.x86_64') }}
+          restore-keys: |
+            pacman-cache-${{ runner.os }}-
+
+      - name: Build ISO with official releng profile and custom driver
         shell: bash
         run: |
           set -euxo pipefail
 
+          mkdir -p /tmp/pacman-cache /tmp/archiso-work /tmp/archiso-out /tmp/local-repo /tmp/driver-package
+          chmod -R a+rwX /tmp/pacman-cache
+
           docker run --rm \
             --privileged \
             -v "$GITHUB_WORKSPACE:/src" \
+            -v /tmp/pacman-cache:/var/cache/pacman/pkg \
             -v /tmp/archiso-work:/work \
             -v /tmp/archiso-out:/out \
+            -v /tmp/local-repo:/local-repo \
+            -v /tmp/local-repo:/opt/rtl8192eu-repo \
+            -v /tmp/driver-package:/driver-package \
             -w /src \
             archlinux:latest \
             bash -lc '
@@ -34,8 +49,18 @@ jobs:
 
               pacman-key --init
               pacman-key --populate archlinux
-              pacman --noconfirm -Syu --needed archlinux-keyring archiso git
+              pacman --noconfirm -Syu --needed archlinux-keyring archiso git base-devel dkms linux-headers
 
+              cp /src/profile/driver-pkg/PKGBUILD /driver-package/PKGBUILD
+              cp /src/profile/driver-pkg/rtl8192eu-dkms.install /driver-package/rtl8192eu-dkms.install
+              useradd -m builder
+              chown -R builder:builder /driver-package
+              su builder -c "cd /driver-package && makepkg --noconfirm"
+
+              cp /driver-package/*.pkg.tar.zst /local-repo/
+              repo-add /local-repo/rtl8192eu-local.db.tar.gz /local-repo/*.pkg.tar.zst
+
+              cd /src
               BUILD_DIR=/tmp/releng-profile
               rm -rf "$BUILD_DIR"
               mkdir -p "$BUILD_DIR"
@@ -52,8 +77,21 @@ jobs:
               fi
 
               if [ -f /src/profile/pacman.conf ]; then
-                cp /src/profile/pacman.conf "$BUILD_DIR/pacman.conf"
+                cat /src/profile/pacman.conf >> "$BUILD_DIR/pacman.conf"
               fi
+
+              printf "%s\n" "" "[rtl8192eu-local]" "SigLevel = Optional TrustAll" "Server = file:///opt/rtl8192eu-repo" >> "$BUILD_DIR/pacman.conf"
+
+              mkdir -p "$BUILD_DIR/airootfs/etc"
+              cp "$BUILD_DIR/pacman.conf" "$BUILD_DIR/airootfs/etc/pacman.conf"
+              mkdir -p "$BUILD_DIR/airootfs/opt/rtl8192eu-repo"
+              cp -a /local-repo/. "$BUILD_DIR/airootfs/opt/rtl8192eu-repo/"
+
+              if [ -d /src/profile/airootfs ]; then
+                cp -a /src/profile/airootfs/. "$BUILD_DIR/airootfs/"
+              fi
+
+              chmod +x "$BUILD_DIR/airootfs/usr/local/bin/archinstall-with-driver"
 
               test -f "$BUILD_DIR/profiledef.sh"
               test -f "$BUILD_DIR/packages.x86_64"

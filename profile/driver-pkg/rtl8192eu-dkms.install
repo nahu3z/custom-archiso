@@ -1,0 +1,16 @@
+post_install() {
+	dkms add -m rtl8192eu -v 1.0
+	for module_dir in /usr/lib/modules/*; do
+		[ -d "$module_dir" ] || continue
+		dkms install -m rtl8192eu -v 1.0 -k "${module_dir##*/}"
+	done
+}
+
+post_upgrade() {
+	dkms remove -m rtl8192eu -v 1.0 --all || true
+	post_install
+}
+
+pre_remove() {
+	dkms remove -m rtl8192eu -v 1.0 --all
+}

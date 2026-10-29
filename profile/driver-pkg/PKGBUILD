@@ -1,0 +1,21 @@
+pkgname=rtl8192eu-dkms
+pkgver=5.11.2.3
+pkgrel=1
+pkgdesc='Realtek RTL8192EU wireless driver from nahu3z/rtl8192eu-linux'
+arch=('any')
+url='https://github.com/nahu3z/rtl8192eu-linux'
+license=('GPL2')
+depends=('dkms')
+makedepends=('git')
+install=rtl8192eu-dkms.install
+source=("$pkgname::git+https://github.com/nahu3z/rtl8192eu-linux.git#commit=17ecfab262f0db3fd66b5559469e09e26f85c8ef")
+sha256sums=('SKIP')
+
+package() {
+	install -d "$pkgdir/usr/src/rtl8192eu-1.0"
+	cp -a "$srcdir/$pkgname/." "$pkgdir/usr/src/rtl8192eu-1.0/"
+	rm -rf "$pkgdir/usr/src/rtl8192eu-1.0/.git"
+	install -Dm644 /dev/stdin "$pkgdir/etc/modprobe.d/rtl8192eu.conf" <<'EOF'
+blacklist rtl8xxxu
+EOF
+}
