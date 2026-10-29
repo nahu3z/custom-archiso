@@ -1,7 +1,6 @@
 base
 base-devel
 linux
-linux-zen
 linux-firmware
 mkinitcpio
 e2fsprogs

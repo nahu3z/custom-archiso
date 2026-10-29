@@ -7,6 +7,7 @@ iso_publisher="Custom Arch <https://archlinux.org>"
 iso_application="Arch Linux Live/Rescue Medium"
 iso_version="$(date +%Y.%m.%d)"
 install_dir="arch"
+
 airootfs_image_type="squashfs"
 airootfs_image_tool_options=('-comp' 'zstd' '-Xcompression-level' '15')
 

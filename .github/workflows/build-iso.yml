@@ -11,19 +11,13 @@ on:
 jobs:
   build-iso:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 120
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repo
         uses: actions/checkout@v7
 
-      - name: Prepare build directories
-        shell: bash
-        run: |
-          set -euxo pipefail
-          mkdir -p /tmp/archiso-work /tmp/archiso-out
-
-      - name: Build ISO in Arch container
+      - name: Install Arch tooling in container and build ISO
         shell: bash
         run: |
           set -euxo pipefail
@@ -38,28 +32,45 @@ jobs:
             bash -lc '
               set -euxo pipefail
 
-              echo "Repo root:"
-              ls -la /src
-              echo "Profile dir:"
-              ls -la /src/profile
-
+              echo "=== install base tooling ==="
               pacman-key --init
               pacman-key --populate archlinux
               pacman --noconfirm -Syu --needed archlinux-keyring archiso git
 
-              if [ ! -f /src/profile/pacman.conf ]; then
-                cp /etc/pacman.conf /src/profile/pacman.conf
+              echo "=== create releng profile from official template ==="
+              BUILD_DIR=/tmp/releng-profile
+              rm -rf "$BUILD_DIR"
+              mkdir -p "$BUILD_DIR"
+
+              cp -a /usr/share/archiso/configs/releng/. "$BUILD_DIR"/
+
+              echo "=== merge custom files ==="
+              if [ -f /src/profile/profiledef.sh ]; then
+                cp /src/profile/profiledef.sh "$BUILD_DIR/profiledef.sh"
               fi
 
-              test -d /src/profile
-              test -f /src/profile/profiledef.sh
+              if [ -f /src/profile/packages.x86_64 ]; then
+                cp /src/profile/packages.x86_64 "$BUILD_DIR/packages.x86_64"
+              fi
 
-              mkarchiso -v -w /work -o /out /src/profile
+              if [ -f /src/profile/pacman.conf ]; then
+                cp /src/profile/pacman.conf "$BUILD_DIR/pacman.conf"
+              fi
+
+              echo "=== final profile tree ==="
+              find "$BUILD_DIR" -maxdepth 2 -print | sort
+
+              echo "=== validate required files ==="
+              test -f "$BUILD_DIR/profiledef.sh"
+              test -f "$BUILD_DIR/packages.x86_64"
+
+              echo "=== build ISO ==="
+              mkarchiso -v -w /work -o /out "$BUILD_DIR"
             '
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v7
         with:
-          name: archlinux-custom-iso
+          name: custom-archiso
           path: /tmp/archiso-out/*.iso
           if-no-files-found: error
