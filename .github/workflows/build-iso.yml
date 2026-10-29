@@ -38,9 +38,12 @@ jobs:
 
       - name: Build ISO
         shell: bash
+        working-directory: ${{ github.workspace }}
         run: |
           set -euxo pipefail
-          mkdir -p /tmp/archlive-work /tmp/archlive-out
+          pwd
+          ls -la
+          ls -la ./profile
           mkarchiso -v -w /tmp/archlive-work -o /tmp/archlive-out ./profile
 
       - name: Upload ISO artifact
