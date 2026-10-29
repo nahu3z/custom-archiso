@@ -11,57 +11,55 @@ on:
 jobs:
   build-iso:
     runs-on: ubuntu-latest
-    container:
-      image: archlinux:latest
-      options: --privileged
     timeout-minutes: 90
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Prepare Arch package manager
+      - name: Prepare build directories
         shell: bash
         run: |
           set -euxo pipefail
-          pacman-key --init
-          pacman-key --populate archlinux
-          pacman --noconfirm -Syu --needed archlinux-keyring archiso git
+          mkdir -p /tmp/archiso-work /tmp/archiso-out
 
-      - name: Ensure pacman.conf exists in profile
-        shell: bash
-        run: |
-          set -euxo pipefail
-          if [ ! -f "$GITHUB_WORKSPACE/profile/pacman.conf" ]; then
-            cp /etc/pacman.conf "$GITHUB_WORKSPACE/profile/pacman.conf"
-          fi
-
-      - name: Build ISO
+      - name: Build ISO in Arch container
         shell: bash
         run: |
           set -euxo pipefail
 
-          export PROFILE_PATH="$GITHUB_WORKSPACE/profile"
-          export WORK_DIR="/tmp/archlive-work"
-          export OUT_DIR="/tmp/archlive-out"
+          docker run --rm \
+            --privileged \
+            -v "$GITHUB_WORKSPACE:/src" \
+            -v /tmp/archiso-work:/work \
+            -v /tmp/archiso-out:/out \
+            -w /src \
+            archlinux:latest \
+            bash -lc '
+              set -euxo pipefail
 
-          echo "GITHUB_WORKSPACE=$GITHUB_WORKSPACE"
-          echo "PROFILE_PATH=$PROFILE_PATH"
+              echo "Repo root:"
+              ls -la /src
+              echo "Profile dir:"
+              ls -la /src/profile
 
-          ls -la "$GITHUB_WORKSPACE"
-          ls -la "$PROFILE_PATH"
+              pacman-key --init
+              pacman-key --populate archlinux
+              pacman --noconfirm -Syu --needed archlinux-keyring archiso git
 
-          test -d "$PROFILE_PATH"
-          test -f "$PROFILE_PATH/profiledef.sh"
+              if [ ! -f /src/profile/pacman.conf ]; then
+                cp /etc/pacman.conf /src/profile/pacman.conf
+              fi
 
-          rm -rf "$WORK_DIR" "$OUT_DIR"
-          mkdir -p "$WORK_DIR" "$OUT_DIR"
+              test -d /src/profile
+              test -f /src/profile/profiledef.sh
 
-          mkarchiso -v -w "$WORK_DIR" -o "$OUT_DIR" "$PROFILE_PATH"
+              mkarchiso -v -w /work -o /out /src/profile
+            '
 
       - name: Upload ISO artifact
         uses: actions/upload-artifact@v7
         with:
           name: archlinux-custom-iso
-          path: /tmp/archlive-out/*.iso
+          path: /tmp/archiso-out/*.iso
           if-no-files-found: error
