@@ -43,7 +43,7 @@ jobs:
               cp -a /usr/share/archiso/configs/releng/. "$BUILD_DIR"/
 
               if [ -f /src/profile/profiledef.sh ]; then
-                printf '\n' >> "$BUILD_DIR/profiledef.sh"
+                echo >> "$BUILD_DIR/profiledef.sh"
                 cat /src/profile/profiledef.sh >> "$BUILD_DIR/profiledef.sh"
               fi
 
