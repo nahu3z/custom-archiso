@@ -1,0 +1,42 @@
+name: Build Arch ISO
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    paths-ignore:
+      - 'docs/**'
+      - '**.editorconfig'
+      - '**.gitignore'
+      - '**.md'
+      - 'LICENSE'
+  release:
+    types:
+      - created
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux/archlinux:latest
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v7
+      
+      - name: Initialize Pacman and Install Dependencies
+        run: |
+          pacman-key --init
+          pacman --noconfirm -Sy archlinux-keyring
+          pacman --noconfirm -Syu archiso git
+
+      - name: Build ISO
+        run: |
+          mkarchiso -v -w /tmp/archlive-work -o /tmp/archlive-out ./profile
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: Arch Live ISO
+          path: /tmp/archlive-out/*.iso
