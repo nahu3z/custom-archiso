@@ -9,6 +9,7 @@ mkinitcpio-nfs-utils
 arch-install-scripts
 archinstall
 dkms
+zsh
 rtl8192eu-dkms
 amd-ucode
 intel-ucode
