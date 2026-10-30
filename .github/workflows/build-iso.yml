@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Cache Pacman Packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: /tmp/pacman-cache
           key: pacman-cache-${{ runner.os }}-${{ hashFiles('profile/packages.x86_64') }}
