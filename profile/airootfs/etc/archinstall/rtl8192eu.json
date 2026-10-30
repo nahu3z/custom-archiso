@@ -1,6 +1,7 @@
 {
   "packages": [
     "rtl8192eu-dkms",
+    "base-devel",
     "linux-headers",
     "linux-zen-headers"
   ],

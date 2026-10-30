@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+if [[ -t 0 && $# -eq 0 ]]; then
+	read -r -p 'Install the RTL8192EU driver in the installed system? [y/N] ' install_driver
+	case "${install_driver,,}" in
+		y|yes)
+			exec /usr/bin/archinstall --config /etc/archinstall/rtl8192eu.json
+			;;
+	esac
+fi
+
+exec /usr/bin/archinstall "$@"

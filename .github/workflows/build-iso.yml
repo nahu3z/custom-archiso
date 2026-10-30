@@ -55,7 +55,7 @@ jobs:
               cp /src/profile/driver-pkg/rtl8192eu-dkms.install /driver-package/rtl8192eu-dkms.install
               useradd -m builder
               chown -R builder:builder /driver-package
-              su builder -c "cd /driver-package && makepkg --noconfirm"
+              su builder -c "cd /driver-package && makepkg --cleanbuild --force --noconfirm"
 
               cp /driver-package/*.pkg.tar.zst /local-repo/
               repo-add /local-repo/rtl8192eu-local.db.tar.gz /local-repo/*.pkg.tar.zst
@@ -73,7 +73,7 @@ jobs:
               fi
 
               if [ -f /src/profile/packages.x86_64 ]; then
-                cat /src/profile/packages.x86_64 >> "$BUILD_DIR/packages.x86_64"
+                cp /src/profile/packages.x86_64 "$BUILD_DIR/packages.x86_64"
               fi
 
               if [ -f /src/profile/pacman.conf ]; then
@@ -91,8 +91,7 @@ jobs:
                 cp -a /src/profile/airootfs/. "$BUILD_DIR/airootfs/"
               fi
 
-              chmod +x "$BUILD_DIR/airootfs/usr/local/bin/archinstall-with-driver"
-
+              chmod +x "$BUILD_DIR/airootfs/usr/local/bin/archinstall"
               test -f "$BUILD_DIR/profiledef.sh"
               test -f "$BUILD_DIR/packages.x86_64"
 
