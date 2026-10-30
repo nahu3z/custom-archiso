@@ -32,6 +32,7 @@ jobs:
 
           mkdir -p /tmp/pacman-cache /tmp/archiso-work /tmp/archiso-out /tmp/local-repo /tmp/driver-package
           chmod -R a+rwX /tmp/pacman-cache
+          trap 'sudo chown -R "$(id -u):$(id -g)" /tmp/pacman-cache' EXIT
 
           docker run --rm \
             --privileged \
