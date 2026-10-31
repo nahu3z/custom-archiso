@@ -4,6 +4,7 @@ post_install() {
 		[ -d "$module_dir" ] || continue
 		dkms install -m rtl8192eu -v 1.0 -k "${module_dir##*/}"
 	done
+	sed -i '/^\[rtl8192eu-local\]$/,+2d' /etc/pacman.conf
 }
 
 post_upgrade() {

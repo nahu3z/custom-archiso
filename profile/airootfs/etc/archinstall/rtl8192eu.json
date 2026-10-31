@@ -4,8 +4,5 @@
     "base-devel",
     "linux-headers",
     "linux-zen-headers"
-  ],
-  "custom_commands": [
-    "sed -i '/^\\[rtl8192eu-local\\]$/,+2d' /etc/pacman.conf"
   ]
 }
