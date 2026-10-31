@@ -1,6 +1,6 @@
 pkgname=rtl8192eu-dkms
 pkgver=5.11.2.3
-pkgrel=1
+pkgrel=2
 pkgdesc='Realtek RTL8192EU wireless driver from nahu3z/rtl8192eu-linux'
 arch=('any')
 url='https://github.com/nahu3z/rtl8192eu-linux'

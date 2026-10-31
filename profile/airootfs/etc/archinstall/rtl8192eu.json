@@ -4,5 +4,8 @@
     "base-devel",
     "linux-headers",
     "linux-zen-headers"
+  ],
+  "custom_commands": [
+    "set -eu\npacman -Q rtl8192eu-dkms >/dev/null\nfound=0\nfor module_dir in /usr/lib/modules/*; do\n  [ -d \"$module_dir\" ] || continue\n  found=1\n  kernel_version=${module_dir##*/}\n  if ! dkms status -m rtl8192eu -v 1.0 -k \"$kernel_version\" | grep -q installed; then\n    dkms install -m rtl8192eu -v 1.0 -k \"$kernel_version\"\n  fi\n  depmod \"$kernel_version\"\n  modinfo -k \"$kernel_version\" 8192eu >/dev/null\ndone\n[ \"$found\" -eq 1 ] || { echo \"No installed kernel found for RTL8192EU DKMS\" >&2; exit 1; }"
   ]
 }
