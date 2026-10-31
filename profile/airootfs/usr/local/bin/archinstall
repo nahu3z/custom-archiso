@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
-printf '%s\n' 'RTL8192EU driver: select "Additional packages" in Archinstall and add rtl8192eu-dkms if needed.'
-exec /usr/bin/archinstall "$@"
+set -euo pipefail
+
+pacman -Sy --noconfirm
+printf '%s\n' 'RTL8192EU driver is available and will be included in this installation.'
+exec /usr/bin/archinstall "$@" --config /etc/archinstall/rtl8192eu.json
